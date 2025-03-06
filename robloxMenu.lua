@@ -16,7 +16,7 @@ local spiderEnabled = false
 local silentAimEnabled = false
 local wallbangEnabled = false
 local headSize = 1
-local fov = 100
+local fov = 70
 
 -- Звук при активации функций
 local sound = Instance.new("Sound")
@@ -91,6 +91,12 @@ local function updateHitbox()
     for _, otherPlayer in pairs(game.Players:GetPlayers()) do
         if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Head") then
             otherPlayer.Character.Head.Size = Vector3.new(headSize, headSize, headSize)
+            -- Сохраняем размер головы даже после смерти
+            otherPlayer.CharacterAdded:Connect(function()
+                if hitboxEnabled then
+                    otherPlayer.Character:WaitForChild("Head").Size = Vector3.new(headSize, headSize, headSize)
+                end
+            end)
         end
     end
 end
@@ -163,6 +169,14 @@ local function wallbang()
         if hit and hit.Parent:FindFirstChild("Humanoid") then
             hit.Parent.Humanoid:TakeDamage(100) -- Убивает игрока
         end
+    end
+end
+
+-- Функция FOV (изменение поля зрения)
+local function updateFOV()
+    local camera = workspace.CurrentCamera
+    if camera then
+        camera.FieldOfView = fov
     end
 end
 
@@ -299,6 +313,7 @@ yOffset = yOffset + 0.1
 
 createSlider("FOV", UDim2.new(0.1, 0, yOffset, 0), fov, 50, 200, function(value)
     fov = value
+    updateFOV()
 end)
 
 -- Silent Aim и Wallbang
